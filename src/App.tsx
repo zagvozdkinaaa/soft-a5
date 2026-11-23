@@ -32,8 +32,14 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [budget, setBudget] = useState(1000);
   const [error, setError] = useState("");
+  const [storageWarning, setStorageWarning] = useState("");
 
-  useEffect(() => saveExpenses(expenses), [expenses]);
+  useEffect(() => {
+    const saved = saveExpenses(expenses);
+    setStorageWarning(
+      saved ? "" : "Expenses could not be saved in this browser."
+    );
+  }, [expenses]);
 
   function addExpense(event: FormEvent) {
     event.preventDefault();
@@ -83,6 +89,9 @@ export default function App() {
         <button type="submit">Add expense</button>
       </form>
       {error && <p className="error" role="alert">{error}</p>}
+      {storageWarning && (
+        <p className="error" role="alert">{storageWarning}</p>
+      )}
 
       <section className="filters">
         <input aria-label="Search" placeholder="Search expenses" value={search}

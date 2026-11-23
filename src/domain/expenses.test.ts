@@ -102,12 +102,41 @@ describe("expense storage", () => {
     expect(loadExpenses()).toHaveLength(1);
   });
 
+  it("filters stored expenses with blank titles", () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        createExpense(validInput, "valid"),
+        { ...createExpense(validInput, "blank"), title: "   " }
+      ])
+    );
+    expect(loadExpenses()).toHaveLength(1);
+  });
+
+  it("filters stored expenses with invalid dates", () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        createExpense(validInput, "valid"),
+        { ...createExpense(validInput, "invalid-date"), date: "2026-02-30" }
+      ])
+    );
+    expect(loadExpenses()).toHaveLength(1);
+  });
+
+  it("returns true when saving succeeds", () => {
+    const storage = {
+      setItem: vi.fn()
+    } as unknown as Storage;
+    expect(saveExpenses([createExpense(validInput, "expense-1")], storage)).toBe(true);
+  });
+
   it("handles storage get and set failures safely", () => {
     const storage = {
       getItem: vi.fn(() => { throw new Error("blocked"); }),
       setItem: vi.fn(() => { throw new Error("full"); })
     } as unknown as Storage;
     expect(loadExpenses(storage)).toEqual([]);
-    expect(() => saveExpenses([], storage)).not.toThrow();
+    expect(saveExpenses([], storage)).toBe(false);
   });
 });

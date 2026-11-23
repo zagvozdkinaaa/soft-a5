@@ -1,4 +1,4 @@
-import { CATEGORIES, type Expense } from "../domain/expenses";
+import { CATEGORIES, isValidDate, type Expense } from "../domain/expenses";
 
 export const STORAGE_KEY = "expense-tracker.expenses";
 
@@ -8,12 +8,14 @@ function isExpense(value: unknown): value is Expense {
   return (
     typeof expense.id === "string" &&
     typeof expense.title === "string" &&
+    expense.title.trim().length > 0 &&
     typeof expense.amount === "number" &&
     Number.isFinite(expense.amount) &&
     expense.amount > 0 &&
     typeof expense.category === "string" &&
     CATEGORIES.includes(expense.category as Expense["category"]) &&
-    typeof expense.date === "string"
+    typeof expense.date === "string" &&
+    isValidDate(expense.date)
   );
 }
 
@@ -31,10 +33,12 @@ export function loadExpenses(storage: Storage = localStorage): Expense[] {
 export function saveExpenses(
   expenses: Expense[],
   storage: Storage = localStorage
-): void {
+): boolean {
   try {
     storage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+    return true;
   } catch {
     // Storage can be unavailable or full; the in-memory UI remains usable.
+    return false;
   }
 }
